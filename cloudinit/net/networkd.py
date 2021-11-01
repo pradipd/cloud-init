@@ -238,7 +238,15 @@ class Renderer(renderer.Renderer):
                 name = iface['name']
                 # network state doesn't give dhcp domain info
                 # using ns.config as a workaround here
-                self.dhcp_domain(ns.config['ethernets'][name], cfg)
+                found = False
+                for k, v in ns.config['ethernets'].items():
+                    if v.get('set-name') is name:
+                        self.dhcp_domain(ns.config['ethernets'][k], cfg)
+                        found = True
+                        break
+
+                if not found:
+                    LOG.debug('failed to find a configuration with interface name %s', name)
 
             ret_dict.update({link: cfg.get_final_conf()})
 
